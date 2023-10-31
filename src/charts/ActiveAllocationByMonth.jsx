@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, { useState, useRef, useLayoutEffect, useEffect } from "react";
 
 import { Chart } from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -16,6 +16,7 @@ import {
 } from "../pages/dashboard/Dashboard.style";
 
 export const ActiveAllocationByMonthChart = ({ selectedCentro, monthlyAllocationCDM, monthlyAllocationICS, handleMonthlyAllocation }) => {
+	const [chartData, setChartData] = useState()
 	const [selectedYearFirst, setSelectedYearFirst] = useState('');
 	const [areaMonthChart, setAreaMonthChart] = useState('');
 	const [subareaMonthChart, setSubareaMonthChart] = useState('');
@@ -146,13 +147,13 @@ export const ActiveAllocationByMonthChart = ({ selectedCentro, monthlyAllocation
 		const data = handleMonthlyAllocation(event.target.value, selectedCentro);
 		setAreaMonthChart('');
 		drawBarChart(data, event.target.value)
-		console.log(event.target.value)
+		setChartData(data)
 	}
 
   const filterMonthChart = async (event) => {
 		setAreaMonthChart(event.target.value);
 
-		let data = selectedCentro === 'CDM' ? monthlyAllocationCDM : monthlyAllocationICS;
+		let data = chartData
 		if(event.target.value !== 'todas') {
 			data = data.map((month) => 
 				month.filter((i) => i["Área"] === event.target.value)
@@ -164,7 +165,7 @@ export const ActiveAllocationByMonthChart = ({ selectedCentro, monthlyAllocation
 	const filterSubareaMonthChart = async (event) => {
 		setSubareaMonthChart(event.target.value);
 
-		let data = selectedCentro === 'CDM' ? monthlyAllocationCDM : monthlyAllocationICS;
+		let data = chartData
 		if(event.target.value !== 'todas') {
 			data = data.map((month) => 
 				month.filter((i) => i["Função"] === event.target.value)
@@ -181,6 +182,14 @@ export const ActiveAllocationByMonthChart = ({ selectedCentro, monthlyAllocation
   useLayoutEffect(() => {
     drawBarChart(monthlyAllocationCDM, selectedYearFirst)
   }, [])
+
+	useEffect(() => {
+		if (selectedCentro === "ICS") {
+			setChartData(monthlyAllocationICS)
+		} else {
+			setChartData(monthlyAllocationCDM)
+		}
+	}, [selectedCentro]);
 
 
   return (
