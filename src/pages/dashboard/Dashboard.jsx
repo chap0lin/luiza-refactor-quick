@@ -11,6 +11,7 @@ import { Chart, registerables } from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { SidebarComponent } from '../../components';
 import { useGoogleDataContext } from '../../contexts/dataProvider/GoogleDataProvider'
+import { ActiveAllocationByMonthChart } from '../../charts/ActiveAllocationByMonth'
 
 import {
   ContainerApp,
@@ -47,14 +48,10 @@ export const Dashboard = ({ setActiveRoute }) => {
 	} = useGoogleDataContext();
 
 	const [loading, setLoading] = useState(true);
-	const [areaMonthChart, setAreaMonthChart] = useState('');
-	const [subareaMonthChart, setSubareaMonthChart] = useState('');
 	const [secondAreaMonthChart, setSecondAreaMonthChart] = useState('');
 	const [secondSubareaMonthChart, setSecondSubareaMonthChart] = useState('');
 	const [areaPieChart, setAreaPieChart] = useState('');
-	const monthChartRef = useRef();
 	const secondMonthChartRef = useRef();
-	const monthChartRef2 = useRef();
 	const secondMonthChartRef2 = useRef();
 	const pieChart = useRef();
 	const pieChart2 = useRef();
@@ -69,36 +66,6 @@ export const Dashboard = ({ setActiveRoute }) => {
 	const ColaboratorsPage = () => {
 		setActiveRoute("/colaborators");
 	}
-
-	const filterMonthChart = async (event) => {
-		setAreaMonthChart(event.target.value);
-
-		let data = selectedCentro === 'CDM' ? monthlyAllocationCDM : monthlyAllocationICS;
-		if(event.target.value !== 'todas') {
-			data = data.map((month) => 
-				month.filter((i) => i["Área"] === event.target.value)
-			);
-		}
-		drawBarChart(data);
-	}
-
-	const filterSubareaMonthChart = async (event) => {
-		setSubareaMonthChart(event.target.value);
-
-		let data = selectedCentro === 'CDM' ? monthlyAllocationCDM : monthlyAllocationICS;
-		if(event.target.value !== 'todas') {
-			data = data.map((month) => 
-				month.filter((i) => i["Função"] === event.target.value)
-			);
-		}
-		else {
-			data = data.map((month) => 
-				month.filter((i) => i["Área"] === areaMonthChart)
-			);
-		}
-		drawBarChart(data);
-	}
-
 
 	const filteSecondMonthChart = async (event) => {
 		setSecondAreaMonthChart(event.target.value);
@@ -138,124 +105,6 @@ export const Dashboard = ({ setActiveRoute }) => {
 		}
 		drawPieChart(data);
 	}
-
-	const drawBarChart = (data) => {
-		if(monthChartRef2?.current) {
-			monthChartRef2.current.destroy();
-		}
-		if(monthChartRef?.current) {
-			monthChartRef2.current = new Chart(monthChartRef.current, {
-				plugins: [
-					ChartDataLabels,
-					{
-						beforeDraw: (chart) => {
-							const ctx = chart.canvas.getContext('2d');
-							ctx.save();
-							ctx.globalCompositeOperation = 'destination-over';
-							ctx.fillStyle = 'white';
-							ctx.fillRect(0, 0, chart.canvas.width, chart.canvas.height);
-							ctx.restore();
-						}
-					}
-				],
-				type: 'bar',
-				data: {
-						labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-						datasets: [
-							{
-								label: 'Alocados',
-								data: [
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[0].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2),
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[1].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[2].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[3].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[4].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[5].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[6].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[7].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[8].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[9].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[10].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[11].map((i) => i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2)
-								],
-								borderWidth: 1,
-								backgroundColor: ["#8bc53f"]
-
-							},
-							{
-								label: 'Desalocados',
-								data: [
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[0].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[1].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[2].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[3].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[4].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[5].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[6].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									selectedYearFirst === 2023 || selectedYearFirst === '' ? 0 : data[7].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[8].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[9].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[10].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2), 
-									data[11].map((i) => 1 - i.percentageAllocated).reduce((pv, cv) => pv + cv, 0).toFixed(2)
-								],
-								borderWidth: 1,
-								backgroundColor: ["#f08522"]
-							},
-					]
-				},
-				options: {
-					plugins: {
-						legend: {
-							position: 'bottom',
-						},
-						title: {
-							display: true,
-							text: 'Status de alocação mensal dos Projetos Contratados',
-							font: {
-								size: 18,
-							},
-							padding: {
-								top: 20,
-								bottom: 40
-							}
-						},
-						subtitle: {
-							display: true,
-							position: 'bottom',
-							text: '*Considerando alocação em qualquer período do mês',
-							font: {
-								size: 14,
-								family: 'tahoma',
-								weight: 'normal',
-								style: 'italic'
-							},
-							padding: {
-								bottom: 10
-							}
-						},
-						datalabels: {
-							anchor: 'end',
-							align: 'top',
-							display: function(context) {
-								return context.dataset.data[context.dataIndex] !== 0; // or >= 1 or ...
-						 	},
-							//formatter: Math.round,
-							font: {
-									weight: 'bold',
-									size: 14
-							}
-						}
-					},
-					scales: {
-						y: {
-								beginAtZero: true,
-								suggestedMax: areaMonthChart !== 'Todas' ? 20 : 50
-						},
-					},
-				}
-			});
-		}
-	};
 
 	const secondDrawBarChart = (data) => {
 		if(secondMonthChartRef2?.current) {
@@ -559,14 +408,12 @@ export const Dashboard = ({ setActiveRoute }) => {
 	useLayoutEffect(() => {
 		if(selectedCentro === 'CDM' && monthlyAllocationCDM.length > 0 && currentAllocationCDM.length > 0 && tableColaborators.length > 0) {
 			if(loading) setLoading(false);
-			drawBarChart(monthlyAllocationCDM);
 			secondDrawBarChart(monthlyAllocationCDM);
 			drawPieChart(currentAllocationCDM);
       // drawColabByAreaChart(tableColaborators);
 		}
 		if(selectedCentro === 'ICS' && monthlyAllocationICS.length > 0 && currentAllocationICS.length > 0 && tableColaborators.length > 0) {
 			if(loading) setLoading(false);
-			drawBarChart(monthlyAllocationICS);
 			secondDrawBarChart(monthlyAllocationICS);
 			drawPieChart(currentAllocationICS);
       // drawColabByAreaChart(tableColaborators);
@@ -574,7 +421,7 @@ export const Dashboard = ({ setActiveRoute }) => {
 	}, [currentAllocationCDM, monthlyAllocationCDM, currentAllocationICS, monthlyAllocationICS, selectedCentro, loading]);
 
 	const filterCentro = (event) => {
-		setSelectedYearFirst(currentYear);
+		// setSelectedYearFirst(currentYear);
 		setSelectedYearSecond(currentYear);
 		setAreaMonthChart('todas');
 		setSecondAreaMonthChart('todas');
@@ -589,11 +436,6 @@ export const Dashboard = ({ setActiveRoute }) => {
 		a.click();
 	}
 
-	const handleYearFirst = (event) => {
-		setSelectedYearFirst(event.target.value);
-		handleMonthlyAllocation(event.target.value, selectedCentro);
-		setAreaMonthChart('');
-	}
 
 	const handleYearSecond = (event) => {
 		setSelectedYearSecond(event.target.value);
@@ -692,108 +534,12 @@ export const Dashboard = ({ setActiveRoute }) => {
 						{ loading ? 
 							<CircularProgress/>
 							:
-							<>
-								<InputSelect>
-									<Box sx={{ minWidth: 120 }}>
-										<FormControl sx={{ minWidth: 120 }} size="small">
-											<InputLabel id="demo-simple-select-label">Ano</InputLabel>
-											<Select
-												labelId="demo-simple-select-label"
-												id="demo-simple-select"
-												value={selectedYearFirst}
-												label="Ano"
-												onChange={handleYearFirst}
-											>
-												<MenuItem value={2023}>2023</MenuItem>
-												<MenuItem value={2024}>2024</MenuItem>
-												<MenuItem value={2025}>2025</MenuItem>
-												<MenuItem value={2026}>2026</MenuItem>
-											</Select>
-										</FormControl>
-									</Box>
-									{ selectedCentro === 'CDM' ? 
-										<Box sx={{ minWidth: 220 }}>
-											<FormControl sx={{ minWidth: 220 }} size="small">
-												<InputLabel id="demo-simple-select-label">Área</InputLabel>
-												<Select
-													labelId="demo-simple-select-label"
-													id="demo-simple-select"
-													value={areaMonthChart}
-													label="Área"
-													onChange={filterMonthChart}
-												>
-													<MenuItem value={'Design'}>Design</MenuItem>
-													<MenuItem value={'Embarcados'}>Embarcados</MenuItem>
-													<MenuItem value={'Engenharia de Sistemas'}>Engenharia de Sistemas</MenuItem>
-													<MenuItem value={'Hardware'}>Hardware</MenuItem>
-													<MenuItem value={'IA'}>IA</MenuItem>
-													<MenuItem value={'Operacoes'}>Operações</MenuItem>
-													<MenuItem value={'Software'}>Software</MenuItem>
-													<MenuItem value={'todas'}>Todas</MenuItem>
-												</Select>
-											</FormControl>
-										</Box>
-										:
-										<Box sx={{ minWidth: 220 }}>
-											<FormControl sx={{ minWidth: 220 }} size="small">
-												<InputLabel id="demo-simple-select-label">Área</InputLabel>
-												<Select
-													labelId="demo-simple-select-label"
-													id="demo-simple-select"
-													value={areaMonthChart}
-													label="Área"
-													onChange={filterMonthChart}
-												>
-													<MenuItem value={'Design'}>Design</MenuItem>
-													<MenuItem value={'Operacoes'}>Operações</MenuItem>
-													<MenuItem value={'Software'}>Software</MenuItem>
-													<MenuItem value={'todas'}>Todas</MenuItem>
-												</Select>
-											</FormControl>
-										</Box>
-									}
-									{
-										areaMonthChart === 'Engenharia de Sistemas' && 
-										<Box sx={{ minWidth: 220 }}>
-											<FormControl sx={{ minWidth: 220 }} size="small">
-												<InputLabel id="demo-simple-select-label">Subárea</InputLabel>
-												<Select
-													labelId="demo-simple-select-label"
-													id="demo-simple-select"
-													value={subareaMonthChart}
-													label="Subárea"
-													onChange={filterSubareaMonthChart}
-												>
-													<MenuItem value={'Eng. de Sistemas'}>Eng. de Sistemas</MenuItem>
-													<MenuItem value={'QA'}>QA</MenuItem>
-													<MenuItem value={'todas'}>Todas</MenuItem>
-												</Select>
-											</FormControl>
-										</Box>
-									}
-									{
-										areaMonthChart === 'Operacoes' && 
-										<Box sx={{ minWidth: 220 }}>
-											<FormControl sx={{ minWidth: 220 }} size="small">
-												<InputLabel id="demo-simple-select-label">Subárea</InputLabel>
-												<Select
-													labelId="demo-simple-select-label"
-													id="demo-simple-select"
-													value={subareaMonthChart}
-													label="Subárea"
-													onChange={filterSubareaMonthChart}
-												>
-													<MenuItem value={'Coordenador Proj'}>Coordenador Proj</MenuItem>
-													<MenuItem value={'Scrum Master'}>Scrum Master</MenuItem>
-													<MenuItem value={'todas'}>Todas</MenuItem>
-												</Select>
-											</FormControl>
-										</Box>
-									}
-								</InputSelect>
-								<canvas id="chart" ref={monthChartRef}></canvas>
-								<button id="btn-download" onClick={() => downloadChart(monthChartRef2)}>Exportar</button>
-							</>
+							<ActiveAllocationByMonthChart
+								selectedCentro={selectedCentro} 
+								monthlyAllocationCDM={monthlyAllocationCDM}
+								monthlyAllocationICS={monthlyAllocationICS}
+								handleMonthlyAllocation={handleMonthlyAllocation}
+							/>
 						}
 					</BarChart>
 					

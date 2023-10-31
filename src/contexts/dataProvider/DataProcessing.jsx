@@ -171,24 +171,27 @@ export const DataProcessing = ({
       });
       generalAllocationByMonth.push(allocatedThisMonth);
     });
-    if(selectedCenter === 'CDM') {
-      setMonthlyAllocationCDM(generalAllocationByMonth)
-    } else {
-      setMonthlyAllocationICS(generalAllocationByMonth)
-    }
+    // if(selectedCenter === 'CDM') {
+    //   setMonthlyAllocationCDM(generalAllocationByMonth)
+    // } else {
+    //   setMonthlyAllocationICS(generalAllocationByMonth)
+    // }
+    return generalAllocationByMonth
   }
 
   useEffect(() => {
     if(tableAllocationCDM.length > 0 && tableColaborators.length > 0) {
       handleCurrentAllocation("CDM");
-      handleMonthlyAllocation(2023,"CDM");
+      const data = handleMonthlyAllocation(2023,"CDM");
+      setMonthlyAllocationCDM(data)
     }
   }, [tableAllocationCDM, tableProjectsCDM, tableColaborators]);
 
   useEffect(() => {
     if(tableAllocationICS.length > 0 && tableColaborators.length > 0) {
       handleCurrentAllocation("ICS");
-      handleMonthlyAllocation(2023,"ICS");
+      const data = handleMonthlyAllocation(2023,"ICS");
+      setMonthlyAllocationICS(data)
     }
   }, [tableAllocationICS, tableProjectsICS, tableColaborators]);
 
